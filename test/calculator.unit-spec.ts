@@ -1,5 +1,5 @@
 import { describe, expect, beforeEach, it } from "@jest/globals";
-import { Calculator } from "../libs/calculator";
+import { Calculator } from "../src/libs/calculator";
 
 describe("Calculator", () => {
   let calculator: Calculator;

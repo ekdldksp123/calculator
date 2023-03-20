@@ -1,0 +1,87 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0 auto;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 428px;
+  height: 100vh;
+  padding: 250px 25px 25px 25px;
+
+  background-color: #000000;
+  color: #ffffff;
+}
+
+#display {
+  align-self: flex-end;
+
+  font-family: "SF Pro";
+  font-style: normal;
+  font-weight: 274;
+  font-size: 90px;
+  line-height: 107px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.buttons > button {
+  outline: none;
+  border: none;
+  border-radius: 352px;
+
+  width: 85px;
+  height: 85px;
+
+  font-family: "SF Pro";
+  font-style: normal;
+
+  font-weight: 200;
+  font-size: 35px;
+}
+
+.number {
+  background: #333333;
+  color: #ffffff;
+}
+
+button.zero {
+  background: #333333;
+  color: #ffffff;
+
+  width: 182px;
+  height: 85px;
+
+  text-align: left;
+  padding-left: 30px;
+}
+
+.operator {
+  background: orange;
+  color: #ffffff;
+}
+
+.addOns {
+  background: #a5a5a5;
+  color: #000000;
+}
