@@ -3,7 +3,7 @@ import fs from "fs";
 
 const PORT = 3000;
 
-fs.readFile("./index.html", (error, html) => {
+fs.readFile("./src/index.html", (error, html) => {
   if (error) throw error;
   http
     .createServer((req, res) => {
