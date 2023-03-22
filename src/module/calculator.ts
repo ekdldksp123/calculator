@@ -10,6 +10,7 @@ import { operations, percent } from "./operations";
  * - currentValue: 누적된 계산값
  * - currentOperator: 최근 오퍼레이터
  * - lastOperator: 마지막 오퍼레이터
+ * - repeatLastOperator: 마지막 오퍼레이터를 재수행할지 flag
  * - history: 계산 히스토리
  *
  * @method
@@ -28,7 +29,7 @@ import { operations, percent } from "./operations";
 
 class Calculator {
   display?: string;
-  clearDisplay?: boolean;
+  repeatLastOperator?: boolean;
   updateDisplay: (value?: string) => void;
   currentValue?: number;
   currentOperator?: string;
@@ -42,7 +43,7 @@ class Calculator {
     this.currentValue = undefined;
     this.currentOperator = undefined;
     this.lastOperator = undefined;
-    this.clearDisplay = false;
+    this.repeatLastOperator = false;
   }
 
   setUpdateDisplay(updateDisplay: (value?: string) => void) {
@@ -104,7 +105,7 @@ class Calculator {
       const newVal = "0.";
       this.display = newVal;
       this.onDisplayUpdate();
-      this.clearDisplay = false;
+      this.repeatLastOperator = false;
     }
   };
 
@@ -120,14 +121,14 @@ class Calculator {
     } else {
       this.display = "-" + this.display;
     }
-    this.clearDisplay = false;
+    this.repeatLastOperator = false;
     this.onDisplayUpdate();
   };
 
   percentHandler = () => {
     if (this.display !== undefined) {
       this.display = percent(parseFloat(this.display)).toString();
-      this.clearDisplay = false;
+      this.repeatLastOperator = false;
       this.onDisplayUpdate();
     }
   };
@@ -159,7 +160,7 @@ class Calculator {
   };
 
   calculate = () => {
-    console.log(this.currentOperator, this.clearDisplay);
+    console.log(this.currentOperator, this.repeatLastOperator);
     // operator, display 확인
     if (!this.currentOperator && !this.lastOperator) return;
     if (this.display === undefined) return;
@@ -169,7 +170,7 @@ class Calculator {
     let rightNum;
     let operation;
 
-    if (this.clearDisplay) {
+    if (this.repeatLastOperator) {
       // = 을 연속해서 눌렀을때 마지막 연산이 계속되게
       const latestOperation = this.history[this.history.length - 1];
       leftNum = parseFloat(this.display);
@@ -196,7 +197,7 @@ class Calculator {
     this.executeOperation(newHistory);
     // display 업데이트
     this.onDisplayUpdate();
-    this.clearDisplay = true;
+    this.repeatLastOperator = true;
     this.currentValue = undefined;
     // history 추가
     this.addHistory(newHistory);
@@ -208,7 +209,7 @@ class Calculator {
     this.currentValue = undefined;
     this.currentOperator = undefined;
     this.lastOperator = undefined;
-    this.clearDisplay = false;
+    this.repeatLastOperator = false;
   };
 
   actionHandler = (btn: Button) => {
@@ -230,7 +231,7 @@ class Calculator {
         break;
       default:
         this.currentOperator = btn.value;
-        this.clearDisplay = false;
+        this.repeatLastOperator = false;
         break;
     }
   };
@@ -238,7 +239,7 @@ class Calculator {
   onButtonClick = (btn: Button) => {
     switch (btn.type) {
       case "number":
-        this.clearDisplay = false;
+        this.repeatLastOperator = false;
         this.numberHandler(btn);
         break;
       case "operator":
