@@ -1,5 +1,5 @@
-import { Button, History, Operation } from "../types";
-import { operations } from "./operations";
+import { Button, History } from "../types";
+import { operations, percent } from "./operations";
 
 /**
  * @description calculator 상태관리 클래스
@@ -18,20 +18,22 @@ import { operations } from "./operations";
  * - onButtonClick: 계산기 버튼을 클릭했을때 핸들러
  * - numberHandler: 숫자를 클릭했을때 핸들러
  * - decimalHandler: 소수점을 클릭했을 때 핸들러
+ * - percentHandler: % 클릭했을 때 핸들러
  * - switchPolarityHandler: 음수양수 변환 핸들러
  * - actionHandler: 사칙연산/부가기능을 클릭했을때 핸들러
  * - calculate: = 을 클릭했을때 핸들러
+ * - executeOperation: 사칙연산 계산 수행 및 예외처리
  * - clear: 상태 초기화
  */
 
 class Calculator {
   display?: string;
-  private clearDisplay?: boolean;
-  private updateDisplay: (value?: string) => void;
-  private currentValue?: number;
-  private currentOperator?: string;
-  private lastOperator?: string;
-  private history: History[];
+  clearDisplay?: boolean;
+  updateDisplay: (value?: string) => void;
+  currentValue?: number;
+  currentOperator?: string;
+  lastOperator?: string;
+  history: History[];
 
   constructor() {
     this.history = [];
@@ -47,7 +49,7 @@ class Calculator {
     this.updateDisplay = updateDisplay;
   }
 
-  private addHistory(newHistory: History) {
+  addHistory(newHistory: History) {
     this.history.push(newHistory);
   }
 
@@ -55,10 +57,10 @@ class Calculator {
     this.updateDisplay(this.display);
   };
 
-  private numberHandler = ({ value }: Button) => {
+  numberHandler = ({ value }: Button) => {
     const isNegativeZero = this.display === "-0";
 
-    if (this.currentOperator && this.display && !isNegativeZero) {
+    if (this.currentOperator && this.display !== undefined && !isNegativeZero) {
       this.removeDecimalPoint();
 
       if (this.currentValue && this.lastOperator) {
@@ -89,17 +91,17 @@ class Calculator {
     return;
   };
 
-  private decimalHandler = () => {
+  decimalHandler = () => {
     if (
-      typeof this.display === "string" &&
+      this.display !== undefined &&
       !this.display.includes(".") &&
-      this.display.length > 0 &&
-      !this.clearDisplay
+      this.display.length > 0
     ) {
       const newVal = this.display + ".";
       this.display = newVal;
       this.onDisplayUpdate();
-    } else if (this.clearDisplay || this.display === undefined) {
+    } else if (this.display === undefined) {
+      //TODO right 숫자 소수점 로직 더 고민해보기
       const newVal = "0.";
       this.display = newVal;
       this.onDisplayUpdate();
@@ -107,7 +109,7 @@ class Calculator {
     }
   };
 
-  private switchPolarityHandler = () => {
+  switchPolarityHandler = () => {
     if (this.currentOperator && this.display) {
       this.currentValue = parseFloat(this.display);
     }
@@ -123,8 +125,16 @@ class Calculator {
     this.onDisplayUpdate();
   };
 
+  percentHandler = () => {
+    if (this.display !== undefined) {
+      this.display = percent(parseFloat(this.display)).toString();
+      this.clearDisplay = false;
+      this.onDisplayUpdate();
+    }
+  };
+
   // 계산(=) 시 끝에 붙어있는 소수점 제거
-  private removeDecimalPoint = () => {
+  removeDecimalPoint = () => {
     if (
       this.display !== undefined &&
       this.display.indexOf(".") === this.display.length
@@ -133,23 +143,23 @@ class Calculator {
     }
   };
 
-  private executeOperation = ({ leftNum, rightNum, operation }: History) => {
+  executeOperation = ({ leftNum, rightNum, operation }: History) => {
     let result;
     try {
       result = operation(leftNum, rightNum);
     } catch (error) {
       result = NaN;
     }
-    this.currentValue = undefined;
 
-    if (result === undefined || isNaN(result)) {
+    if (result === undefined || isNaN(result) || !isFinite(result)) {
       this.display = "오류";
     } else {
       this.display = result.toString();
     }
+    this.currentValue = this.display === "오류" ? 0 : parseFloat(this.display);
   };
 
-  private calculate = () => {
+  calculate = () => {
     // operator, display 확인
     if (!this.currentOperator && !this.lastOperator) return;
     if (this.display === undefined) return;
@@ -180,6 +190,7 @@ class Calculator {
       leftNum,
       rightNum,
     };
+
     // 계산 수행
     this.executeOperation(newHistory);
     // display 업데이트
@@ -189,8 +200,7 @@ class Calculator {
     this.addHistory(newHistory);
   };
 
-  // 초기화
-  private clear = () => {
+  clear = () => {
     this.display = undefined;
     this.onDisplayUpdate();
     this.currentValue = undefined;
@@ -199,7 +209,7 @@ class Calculator {
     this.clearDisplay = false;
   };
 
-  private actionHandler = (btn: Button) => {
+  actionHandler = (btn: Button) => {
     switch (btn.value) {
       case "calculate":
         this.calculate();
@@ -209,6 +219,9 @@ class Calculator {
         break;
       case ".":
         this.decimalHandler();
+        break;
+      case "percent":
+        this.percentHandler();
         break;
       case "switchPolarity":
         this.switchPolarityHandler();
@@ -235,7 +248,7 @@ class Calculator {
     return;
   };
 
-  // test 용 메서드
+  // method for test
   pressButtons = (arr: Array<Button>) => {
     arr.forEach(this.onButtonClick);
   };
