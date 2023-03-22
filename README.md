@@ -14,7 +14,7 @@ yarn install
 yarn start
 ```
 
-<br/><br/>
+<br/>
 
 ## 사용한 라이브러리와 이유
 
@@ -23,7 +23,7 @@ yarn start
 - parcel
   - 빠른 빌드 및 번들링, Hot Module Replacement 지원, config 불필요
 
-<br/><br/>
+<br/>
 
 ## 구현 방법
 
@@ -38,7 +38,7 @@ yarn start
   - 다시 숫자 버튼을 누를 경우 currentValue 값을 마지막 연산의 결과값으로 업데이트 해주고
   - 초기화된 경우 display 값을 동기화 시켜줌
 
-<br/><br/>
+<br/>
 
 ## 예외 처리
 
