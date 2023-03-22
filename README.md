@@ -1,5 +1,7 @@
 # IOS calculator
 
+<img width="837" alt="image" src="https://user-images.githubusercontent.com/64599394/226853598-fe716adf-21d1-4c8e-a07c-bd16d6820177.png">
+
 ## 프로젝트 실행 방법
 
 패키지 설치
