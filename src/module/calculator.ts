@@ -160,7 +160,6 @@ class Calculator {
   };
 
   calculate = () => {
-    console.log(this.currentOperator, this.repeatLastOperator);
     // operator, display 확인
     if (!this.currentOperator && !this.lastOperator) return;
     if (this.display === undefined) return;
