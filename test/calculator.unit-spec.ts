@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { add, divide, multiply, subtract } from "../src/module/actions";
+import { add, divide, multiply, subtract } from "../src/module/operations";
 
 describe("Calculator", () => {
   describe("add", () => {

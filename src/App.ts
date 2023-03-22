@@ -1,23 +1,27 @@
 import Calculator from "./module/calculator";
 
 function App() {
-  const display = document.querySelector("p#display") as HTMLParagraphElement;
-  const numbers = Array.from(document.querySelectorAll("button.number"));
-  const operator = Array.from(document.querySelectorAll("button.operator"));
-  const addOns = Array.from(document.querySelectorAll("button.addOns"));
+  const display = document.querySelector("#display") as HTMLParagraphElement;
+  const buttons = document.querySelectorAll("button");
 
-  const onDisplayUpdate = (newValue: string) => {
-    display.innerText = newValue;
+  const updateDisplay = (value?: string) => {
+    display.innerText = value ?? "0";
   };
 
-  const calculator = new Calculator(onDisplayUpdate);
+  const calculator = new Calculator(updateDisplay);
+
+  const handleBtnClick = (e: Event) => {
+    const el = e.target as HTMLButtonElement;
+    const { value, type } = el.dataset;
+
+    if (value === undefined || type === undefined) return;
+    calculator.buttonPressed({ type, value });
+  };
+
   const init = () => {
-    numbers.forEach((number) => {
-      number.addEventListener("click", (e: Event) => {
-        const value = (e.target as HTMLButtonElement).innerText;
-        calculator.onClickButton("number", value);
-      });
-    });
+    buttons.forEach((btn) =>
+      btn.addEventListener("click", (e) => handleBtnClick(e))
+    );
   };
 
   init();
