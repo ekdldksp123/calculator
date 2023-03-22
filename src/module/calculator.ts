@@ -73,7 +73,6 @@ class Calculator {
 
       this.display = undefined;
       this.lastOperator = this.currentOperator;
-      this.currentOperator = undefined;
     }
 
     // 음수 처리
@@ -160,6 +159,7 @@ class Calculator {
   };
 
   calculate = () => {
+    console.log(this.currentOperator, this.clearDisplay);
     // operator, display 확인
     if (!this.currentOperator && !this.lastOperator) return;
     if (this.display === undefined) return;
@@ -185,6 +185,7 @@ class Calculator {
     if (leftNum === undefined) return;
     if (rightNum === undefined) return;
 
+    this.currentValue = undefined;
     const newHistory = {
       operation: operation,
       leftNum,
@@ -196,6 +197,7 @@ class Calculator {
     // display 업데이트
     this.onDisplayUpdate();
     this.clearDisplay = true;
+    this.currentValue = undefined;
     // history 추가
     this.addHistory(newHistory);
   };
