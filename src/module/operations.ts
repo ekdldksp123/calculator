@@ -17,9 +17,10 @@ export const convert = (a: number) => {
 
 export const percent = (a: number) => a / 100;
 
-export const operations: { [index: string]: Function } = {
-  "+": add,
-  "-": subtract,
-  "*": multiply,
-  "/": divide,
-};
+export const operations: { [index: string]: (a: number, b: number) => number } =
+  {
+    "+": add,
+    "-": subtract,
+    "*": multiply,
+    "/": divide,
+  };

@@ -9,69 +9,69 @@ describe("basic", () => {
 
   it("Displays numbers when they are pressed", () => {
     const calc = new Calculator();
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "1",
     });
-    expect(calc.onDisplay).toEqual("1");
+    expect(calc.display).toEqual("1");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "0",
     });
 
-    expect(calc.onDisplay).toEqual("10");
+    expect(calc.display).toEqual("10");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "0",
     });
 
-    expect(calc.onDisplay).toEqual("100");
+    expect(calc.display).toEqual("100");
   });
 
   it('Displays numbers with a decimal when "." is pressed', () => {
     const calc = new Calculator();
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "1",
     });
-    expect(calc.onDisplay).toEqual("1");
+    expect(calc.display).toEqual("1");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "0",
     });
 
-    expect(calc.onDisplay).toEqual("10");
+    expect(calc.display).toEqual("10");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "0",
     });
 
-    expect(calc.onDisplay).toEqual("100");
+    expect(calc.display).toEqual("100");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "operator",
       value: ".",
     });
 
-    expect(calc.onDisplay).toEqual("100.");
+    expect(calc.display).toEqual("100.");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "0",
     });
 
-    expect(calc.onDisplay).toEqual("100.0");
+    expect(calc.display).toEqual("100.0");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "number",
       value: "1",
     });
 
-    expect(calc.onDisplay).toEqual("100.01");
+    expect(calc.display).toEqual("100.01");
   });
 
   it("The display resets when a number is pressed after a math operator", () => {
@@ -103,7 +103,7 @@ describe("basic", () => {
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("100.01");
+    expect(calc.display).toEqual("100.01");
 
     calc.pressButtons([
       {
@@ -116,7 +116,7 @@ describe("basic", () => {
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("1");
+    expect(calc.display).toEqual("1");
   });
 });
 
@@ -138,11 +138,11 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("2");
+    expect(calc.display).toEqual("2");
   });
 
   it("Can subtract numbers", () => {
@@ -162,11 +162,11 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("1");
+    expect(calc.display).toEqual("1");
   });
 
   it("Can multiply numbers", () => {
@@ -186,11 +186,11 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("4");
+    expect(calc.display).toEqual("4");
   });
 
   it("Can divide numbers", () => {
@@ -210,11 +210,11 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("2");
+    expect(calc.display).toEqual("2");
   });
 
   it("Repeated evaluations continue to add to total", () => {
@@ -234,18 +234,18 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("2");
+    expect(calc.display).toEqual("2");
 
     for (let i = 0; i < 10; i++) {
-      calc.buttonPressed({
+      calc.onButtonClick({
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       });
-      expect(calc.onDisplay).toEqual((2 + (i + 1)).toString());
+      expect(calc.display).toEqual((2 + (i + 1)).toString());
     }
   });
 
@@ -282,11 +282,11 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("3");
+    expect(calc.display).toEqual("3");
   });
 
   it("calls update display when a button is pressed", () => {
@@ -313,10 +313,10 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
-    expect(callCount).toEqual(4);
+    expect(callCount).toEqual(3);
   });
 
   it("can be cleared", () => {
@@ -352,17 +352,17 @@ describe("Math operators", () => {
       },
       {
         type: "operator",
-        value: "evaluate",
+        value: "calculate",
       },
     ]);
 
-    expect(calc.onDisplay).toEqual("3");
+    expect(calc.display).toEqual("3");
 
-    calc.buttonPressed({
+    calc.onButtonClick({
       type: "operator",
       value: "clear",
     });
 
-    expect(calc.onDisplay).toEqual(undefined);
+    expect(calc.display).toEqual(undefined);
   });
 });

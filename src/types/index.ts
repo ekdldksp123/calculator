@@ -1,24 +1,14 @@
-export interface CalculatorProps {
-  onDisplayUpdate: (newValue: string) => void;
-}
+export type Operation = (a: number, b: number) => number;
 
-export type ButtonType = "number" | "operator" | "addOns";
+export type ActionType = "number" | "operator";
 
-export interface ButtonProps {
-  type: "number" | "operator" | "addOns";
-  value: string;
-}
-
-export type Actions = Record<string, Function>;
-
-// UI buttons for calculator
 export interface Button {
-  type: string; // 'number' | 'operator' | 'action'
+  type: ActionType;
   value: string;
 }
 
 export interface History {
-  operation: Function;
+  operation: Operation;
   leftNum: number;
   rightNum: number;
 }

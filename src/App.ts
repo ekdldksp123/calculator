@@ -1,4 +1,5 @@
 import Calculator from "./module/calculator";
+import { ActionType } from "./types";
 
 function App() {
   const display = document.querySelector("#display") as HTMLParagraphElement;
@@ -15,10 +16,8 @@ function App() {
     const el = e.target as HTMLButtonElement;
     const { value, type } = el.dataset;
 
-    console.log(value, type);
-
     if (value === undefined || type === undefined) return;
-    calculator.buttonPressed({ type, value });
+    calculator.onButtonClick({ type: type as ActionType, value });
   };
 
   const init = () => {

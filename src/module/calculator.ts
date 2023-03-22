@@ -1,198 +1,233 @@
-import { Button, History } from "../types";
+import { Button, History, Operation } from "../types";
 import { operations } from "./operations";
 
+/**
+ * @description calculator 상태관리 클래스
+ *
+ * @field
+ * - display: 화면에 표시될 숫자
+ * - updateDisplay: 화면에 표시되는 숫자값을 업데이트 하는 함수(외부 주입)
+ * - currentValue: 누적된 계산값
+ * - currentOperator: 최근 오퍼레이터
+ * - lastOperator: 마지막 오퍼레이터
+ * - history: 계산 히스토리
+ *
+ * @method
+ * - setUpdateDisplay: updateDisplay 를 외부에서 주입받아 set
+ * - onDisplayUpdate: 화면에 표시된 숫자값을 현재 display 값으로 업데이트
+ * - onButtonClick: 계산기 버튼을 클릭했을때 핸들러
+ * - numberHandler: 숫자를 클릭했을때 핸들러
+ * - decimalHandler: 소수점을 클릭했을 때 핸들러
+ * - switchPolarityHandler: 음수양수 변환 핸들러
+ * - actionHandler: 사칙연산/부가기능을 클릭했을때 핸들러
+ * - calculate: = 을 클릭했을때 핸들러
+ * - clear: 상태 초기화
+ */
+
 class Calculator {
+  display?: string;
+  private clearDisplay?: boolean;
+  private updateDisplay: (value?: string) => void;
   private currentValue?: number;
   private currentOperator?: string;
   private lastOperator?: string;
-  private displayShouldClear?: boolean;
-  onDisplay?: string;
-  private updateDisplay: (value?: string) => void;
   private history: History[];
-
-  debug(method: string) {
-    console.log(method);
-    console.log("onDisplay:", this.onDisplay);
-    console.log("currentValue:", this.currentValue);
-    console.log("currentOperator:", this.currentOperator);
-    console.log("lastOperator:", this.lastOperator);
-    console.log("displayShouldClear:", this.displayShouldClear);
-    console.log("history:", this.history);
-  }
 
   constructor() {
     this.history = [];
     this.updateDisplay = (value?: string) => {};
-    this.onDisplay = undefined;
+    this.display = undefined;
     this.currentValue = undefined;
     this.currentOperator = undefined;
     this.lastOperator = undefined;
-    this.displayShouldClear = true;
+    this.clearDisplay = false;
   }
 
   setUpdateDisplay(updateDisplay: (value?: string) => void) {
     this.updateDisplay = updateDisplay;
   }
 
+  private addHistory(newHistory: History) {
+    this.history.push(newHistory);
+  }
+
   onDisplayUpdate = (): void => {
-    this.updateDisplay(this.onDisplay);
+    this.updateDisplay(this.display);
   };
 
-  private numberPressed = ({ value }: Button) => {
-    const isNegativeZero = this.onDisplay === "-0";
+  private numberHandler = ({ value }: Button) => {
+    const isNegativeZero = this.display === "-0";
 
-    if (this.displayShouldClear) {
-      this.clear();
-      this.displayShouldClear = false;
-    }
-
-    if (this.currentOperator && this.onDisplay && !isNegativeZero) {
-      this.removeHangingDecimal();
+    if (this.currentOperator && this.display && !isNegativeZero) {
+      this.removeDecimalPoint();
 
       if (this.currentValue && this.lastOperator) {
         const operation = operations[this.lastOperator];
-        const result = operation(this.currentValue, parseFloat(this.onDisplay));
+        const result = operation(this.currentValue, parseFloat(this.display));
         this.currentValue = result;
       } else {
-        this.currentValue = parseFloat(this.onDisplay);
+        this.currentValue = parseFloat(this.display);
       }
 
-      this.onDisplay = undefined;
-
+      this.display = undefined;
       this.lastOperator = this.currentOperator;
       this.currentOperator = undefined;
     }
 
-    // We handle null/-0 the same, replace them with the number pressed
-    if (this.onDisplay === undefined || isNegativeZero) {
-      this.onDisplay = isNegativeZero ? "-" + value : value;
+    // 음수 처리
+    if (this.display === undefined || isNegativeZero) {
+      this.display = isNegativeZero ? "-" + value : value;
       this.onDisplayUpdate();
       return;
     }
 
     // 0이 하나 이상 찍히지 않게
-    if (this.onDisplay === "0" && value === "0") return;
+    if (this.display === "0" && value === "0") return;
 
-    this.onDisplay += value;
+    this.display += value;
     this.onDisplayUpdate();
     return;
   };
 
-  private removeHangingDecimal = () => {
+  private decimalHandler = () => {
     if (
-      this.onDisplay !== undefined &&
-      this.onDisplay.indexOf(".") === this.onDisplay.length
+      typeof this.display === "string" &&
+      !this.display.includes(".") &&
+      this.display.length > 0 &&
+      !this.clearDisplay
     ) {
-      this.onDisplay = this.onDisplay.slice(0, this.onDisplay.length - 1);
+      const newVal = this.display + ".";
+      this.display = newVal;
+      this.onDisplayUpdate();
+    } else if (this.clearDisplay || this.display === undefined) {
+      const newVal = "0.";
+      this.display = newVal;
+      this.onDisplayUpdate();
+      this.clearDisplay = false;
     }
   };
 
-  private evaluate = () => {
-    // No operator? Can't evaluate
-    if (!this.currentOperator && !this.lastOperator) return;
+  private switchPolarityHandler = () => {
+    if (this.currentOperator && this.display) {
+      this.currentValue = parseFloat(this.display);
+    }
+    if (!this.display || (this.display && this.currentOperator)) {
+      this.display = "0";
+    }
+    if (this.display.substring(0, 1) === "-") {
+      this.display = this.display.substring(1, this.display.length);
+    } else {
+      this.display = "-" + this.display;
+    }
+    this.clearDisplay = false;
+    this.onDisplayUpdate();
+  };
 
-    this.removeHangingDecimal();
+  // 계산(=) 시 끝에 붙어있는 소수점 제거
+  private removeDecimalPoint = () => {
+    if (
+      this.display !== undefined &&
+      this.display.indexOf(".") === this.display.length
+    ) {
+      this.display = this.display.slice(0, this.display.length - 1);
+    }
+  };
+
+  private executeOperation = ({ leftNum, rightNum, operation }: History) => {
+    let result;
+    try {
+      result = operation(leftNum, rightNum);
+    } catch (error) {
+      result = NaN;
+    }
+    this.currentValue = undefined;
+
+    if (result === undefined || isNaN(result)) {
+      this.display = "오류";
+    } else {
+      this.display = result.toString();
+    }
+  };
+
+  private calculate = () => {
+    // operator, display 확인
+    if (!this.currentOperator && !this.lastOperator) return;
+    if (this.display === undefined) return;
+    this.removeDecimalPoint();
 
     let leftNum;
     let rightNum;
     let operation;
-    if (this.onDisplay === undefined) return;
-    if (this.displayShouldClear) {
-      // Hitting evaluate again just after an evaluation, repeat op
+
+    if (this.clearDisplay) {
+      // = 을 연속해서 눌렀을때 마지막 연산이 계속되게
       const latestOperation = this.history[this.history.length - 1];
-      leftNum = parseFloat(this.onDisplay);
+      leftNum = parseFloat(this.display);
       rightNum = latestOperation.rightNum;
       operation = latestOperation.operation;
     } else {
       leftNum = this.currentValue;
-      rightNum = parseFloat(this.onDisplay);
+      rightNum = parseFloat(this.display);
       // TODO refactoring
-      operation = operations[this.currentOperator || this.lastOperator || "+"];
+      operation = operations[this.currentOperator || this.lastOperator!];
     }
 
-    const result = operation(leftNum, rightNum);
-    this.currentValue = undefined;
-    this.onDisplay = result.toString();
-    this.onDisplayUpdate();
-    this.displayShouldClear = true;
     if (leftNum === undefined) return;
-    this.history.push({
+    if (rightNum === undefined) return;
+
+    const newHistory = {
       operation: operation,
       leftNum,
       rightNum,
-    });
-    return result;
+    };
+    // 계산 수행
+    this.executeOperation(newHistory);
+    // display 업데이트
+    this.onDisplayUpdate();
+    this.clearDisplay = true;
+    // history 추가
+    this.addHistory(newHistory);
   };
 
+  // 초기화
   private clear = () => {
-    this.onDisplay = undefined;
+    this.display = undefined;
     this.onDisplayUpdate();
     this.currentValue = undefined;
     this.currentOperator = undefined;
     this.lastOperator = undefined;
-    this.displayShouldClear = false;
+    this.clearDisplay = false;
   };
 
-  private actionPressed = (btn: Button) => {
+  private actionHandler = (btn: Button) => {
     switch (btn.value) {
-      case "evaluate":
-        this.evaluate();
-        break;
-      case "+":
-      case "-":
-      case "*":
-      case "/":
-      case "^":
-        this.currentOperator = btn.value;
-        this.displayShouldClear = false;
+      case "calculate":
+        this.calculate();
         break;
       case "clear":
         this.clear();
         break;
       case ".":
-        if (
-          typeof this.onDisplay === "string" &&
-          !this.onDisplay.includes(".") &&
-          this.onDisplay.length > 0 &&
-          !this.displayShouldClear
-        ) {
-          const newVal = this.onDisplay + ".";
-          this.onDisplay = newVal;
-          this.onDisplayUpdate();
-        } else if (this.displayShouldClear || this.onDisplay === undefined) {
-          const newVal = "0.";
-          this.onDisplay = newVal;
-          this.onDisplayUpdate();
-          this.displayShouldClear = false;
-        }
+        this.decimalHandler();
         break;
       case "switchPolarity":
-        if (this.currentOperator && this.onDisplay) {
-          this.currentValue = parseFloat(this.onDisplay);
-        }
-        if (!this.onDisplay || (this.onDisplay && this.currentOperator)) {
-          this.onDisplay = "0";
-        }
-        if (this.onDisplay.substr(0, 1) === "-") {
-          this.onDisplay = this.onDisplay.substr(1, this.onDisplay.length);
-        } else {
-          this.onDisplay = "-" + this.onDisplay;
-        }
-        this.displayShouldClear = false;
-        this.onDisplayUpdate();
+        this.switchPolarityHandler();
         break;
       default:
+        this.currentOperator = btn.value;
+        this.clearDisplay = false;
         break;
     }
   };
 
-  buttonPressed = (btn: Button) => {
+  onButtonClick = (btn: Button) => {
     switch (btn.type) {
       case "number":
-        this.numberPressed(btn);
+        this.clearDisplay = false;
+        this.numberHandler(btn);
         break;
       case "operator":
-        this.actionPressed(btn);
+        this.actionHandler(btn);
         break;
       default:
         throw new Error("Button type not recognized!");
@@ -200,8 +235,9 @@ class Calculator {
     return;
   };
 
+  // test 용 메서드
   pressButtons = (arr: Array<Button>) => {
-    arr.forEach(this.buttonPressed);
+    arr.forEach(this.onButtonClick);
   };
 }
 
