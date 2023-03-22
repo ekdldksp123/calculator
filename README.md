@@ -16,6 +16,13 @@ yarn start
 
 ```
 
+## 사용한 라이브러리와 이유
+
+- jest
+  - 테스트 코드 작성 및 테스트 하기 용이
+- parcel
+  - 빠른 빌드 및 번들링, Hot Module Replacement 지원, config 불필요
+
 ## 구현 방법
 
 - 연속된 연산
@@ -24,7 +31,8 @@ yarn start
   - 누적된 계산 값은 currentValue 에 저장하고 leftNum 에 currentValue를 대입
 
 - 누적된 계산값(currentValue) 와 보여줄 값(display)을 분리해서 관리
-  - currentValue은 = 이 수행될때마다 초기화됨
+
+  - currentValue은 = 이 수행될때마다 초기화(undefined)
   - 다시 숫자 버튼을 누를 경우 currentValue 값을 마지막 연산의 결과값으로 업데이트 해주고
   - 초기화된 경우 display 값을 동기화 시켜줌
 
