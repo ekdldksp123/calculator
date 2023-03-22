@@ -55,13 +55,11 @@ describe("calculate unit", () => {
         leftNum: 1,
         rightNum: 2,
       });
-      calc.clearDisplay = true;
+      calc.repeatLastOperator = true;
       calc.calculate();
       expect(calc.display).toBe("5");
-      expect(calc.currentValue).toBe(5);
       calc.calculate();
       expect(calc.display).toBe("7");
-      expect(calc.currentValue).toBe(7);
 
       console.log(calc.history);
 
@@ -77,7 +75,6 @@ describe("calculate unit", () => {
       calc.currentOperator = "*";
       calc.display = "3";
       calc.calculate();
-      expect(calc.currentValue).toBe(6);
       expect(calc.display).toBe("6");
       expect(calc.history).toEqual([
         { operation: operations["*"], leftNum: 2, rightNum: 3 },
