@@ -2,30 +2,45 @@ import { Button, History } from "../types";
 import { operations } from "./operations";
 
 class Calculator {
-  private currentTotal: number | null = null; // What the current running total is
-  private currentOperator: string | null = null; // What the active operator is
-  private lastOperator: string | null = null; // The last operator that was pressed
-  private displayShouldClear: boolean | null = null;
-  private operations: Array<Function>;
-  private onDisplay: string | null = null;
+  private currentValue?: number;
+  private currentOperator?: string;
+  private lastOperator?: string;
+  private displayShouldClear?: boolean;
+  onDisplay?: string;
+  private updateDisplay: (value?: string) => void;
   private history: History[];
 
-  constructor(updateDisplay: (value: string) => void) {
+  debug(method: string) {
+    console.log(method);
+    console.log("onDisplay:", this.onDisplay);
+    console.log("currentValue:", this.currentValue);
+    console.log("currentOperator:", this.currentOperator);
+    console.log("lastOperator:", this.lastOperator);
+    console.log("displayShouldClear:", this.displayShouldClear);
+    console.log("history:", this.history);
+  }
+
+  constructor() {
     this.history = [];
-    this.operations = [updateDisplay];
-    this.onDisplay = null;
-    this.currentTotal = null;
-    this.currentOperator = null;
-    this.lastOperator = null;
+    this.updateDisplay = (value?: string) => {};
+    this.onDisplay = undefined;
+    this.currentValue = undefined;
+    this.currentOperator = undefined;
+    this.lastOperator = undefined;
     this.displayShouldClear = true;
   }
 
-  private executeOperators = (): void => {
-    this.operations.forEach((func) => func(this.onDisplay));
+  setUpdateDisplay(updateDisplay: (value?: string) => void) {
+    this.updateDisplay = updateDisplay;
+  }
+
+  onDisplayUpdate = (): void => {
+    this.updateDisplay(this.onDisplay);
   };
 
-  private numberPressed = (btn: Button) => {
+  private numberPressed = ({ value }: Button) => {
     const isNegativeZero = this.onDisplay === "-0";
+
     if (this.displayShouldClear) {
       this.clear();
       this.displayShouldClear = false;
@@ -34,40 +49,38 @@ class Calculator {
     if (this.currentOperator && this.onDisplay && !isNegativeZero) {
       this.removeHangingDecimal();
 
-      if (this.currentTotal && this.lastOperator) {
+      if (this.currentValue && this.lastOperator) {
         const operation = operations[this.lastOperator];
-        const result = operation(this.currentTotal, parseFloat(this.onDisplay));
-        this.currentTotal = result;
+        const result = operation(this.currentValue, parseFloat(this.onDisplay));
+        this.currentValue = result;
       } else {
-        this.currentTotal = parseFloat(this.onDisplay);
+        this.currentValue = parseFloat(this.onDisplay);
       }
 
-      this.onDisplay = null;
+      this.onDisplay = undefined;
 
       this.lastOperator = this.currentOperator;
-      this.currentOperator = null;
+      this.currentOperator = undefined;
     }
 
     // We handle null/-0 the same, replace them with the number pressed
-    if (this.onDisplay === null || isNegativeZero) {
-      this.onDisplay = isNegativeZero ? "-" + btn.value : btn.value;
-      this.executeOperators();
+    if (this.onDisplay === undefined || isNegativeZero) {
+      this.onDisplay = isNegativeZero ? "-" + value : value;
+      this.onDisplayUpdate();
       return;
     }
 
-    // Don't let more than one 0 be displayed
-    if (this.onDisplay === "0" && btn.value === "0") {
-      return;
-    }
+    // 0이 하나 이상 찍히지 않게
+    if (this.onDisplay === "0" && value === "0") return;
 
-    this.onDisplay = this.onDisplay + btn.value;
-    this.executeOperators();
+    this.onDisplay += value;
+    this.onDisplayUpdate();
     return;
   };
 
   private removeHangingDecimal = () => {
     if (
-      this.onDisplay !== null &&
+      this.onDisplay !== undefined &&
       this.onDisplay.indexOf(".") === this.onDisplay.length
     ) {
       this.onDisplay = this.onDisplay.slice(0, this.onDisplay.length - 1);
@@ -83,7 +96,7 @@ class Calculator {
     let leftNum;
     let rightNum;
     let operation;
-    if (this.onDisplay === null) return;
+    if (this.onDisplay === undefined) return;
     if (this.displayShouldClear) {
       // Hitting evaluate again just after an evaluation, repeat op
       const latestOperation = this.history[this.history.length - 1];
@@ -91,18 +104,18 @@ class Calculator {
       rightNum = latestOperation.rightNum;
       operation = latestOperation.operation;
     } else {
-      leftNum = this.currentTotal;
+      leftNum = this.currentValue;
       rightNum = parseFloat(this.onDisplay);
       // TODO refactoring
       operation = operations[this.currentOperator || this.lastOperator || "+"];
     }
 
     const result = operation(leftNum, rightNum);
-    this.currentTotal = null;
+    this.currentValue = undefined;
     this.onDisplay = result.toString();
-    this.executeOperators();
+    this.onDisplayUpdate();
     this.displayShouldClear = true;
-    if (leftNum === null) return;
+    if (leftNum === undefined) return;
     this.history.push({
       operation: operation,
       leftNum,
@@ -112,12 +125,12 @@ class Calculator {
   };
 
   private clear = () => {
-    this.onDisplay = null;
-    this.executeOperators();
-    this.currentTotal = null;
-    this.currentOperator = null;
-    this.lastOperator = null;
-    this.displayShouldClear = true;
+    this.onDisplay = undefined;
+    this.onDisplayUpdate();
+    this.currentValue = undefined;
+    this.currentOperator = undefined;
+    this.lastOperator = undefined;
+    this.displayShouldClear = false;
   };
 
   private actionPressed = (btn: Button) => {
@@ -145,17 +158,17 @@ class Calculator {
         ) {
           const newVal = this.onDisplay + ".";
           this.onDisplay = newVal;
-          this.executeOperators();
-        } else if (this.displayShouldClear || this.onDisplay === null) {
+          this.onDisplayUpdate();
+        } else if (this.displayShouldClear || this.onDisplay === undefined) {
           const newVal = "0.";
           this.onDisplay = newVal;
-          this.executeOperators();
+          this.onDisplayUpdate();
           this.displayShouldClear = false;
         }
         break;
       case "switchPolarity":
         if (this.currentOperator && this.onDisplay) {
-          this.currentTotal = parseFloat(this.onDisplay);
+          this.currentValue = parseFloat(this.onDisplay);
         }
         if (!this.onDisplay || (this.onDisplay && this.currentOperator)) {
           this.onDisplay = "0";
@@ -166,7 +179,7 @@ class Calculator {
           this.onDisplay = "-" + this.onDisplay;
         }
         this.displayShouldClear = false;
-        this.executeOperators();
+        this.onDisplayUpdate();
         break;
       default:
         break;
@@ -185,6 +198,10 @@ class Calculator {
         throw new Error("Button type not recognized!");
     }
     return;
+  };
+
+  pressButtons = (arr: Array<Button>) => {
+    arr.forEach(this.buttonPressed);
   };
 }
 

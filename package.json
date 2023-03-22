@@ -6,7 +6,8 @@
   "scripts": {
     "start": "parcel ./src/index.html",
     "test": "jest",
-    "test:unit": "jest --config ./test/calculator.unit-test.ts"
+    "test:unit": "jest ./test/calculator.unit-spec.ts",
+    "test:e2e": "jest ./test/calculator.e2e-spec.ts"
   },
   "keywords": [],
   "author": "vinchae kim",
